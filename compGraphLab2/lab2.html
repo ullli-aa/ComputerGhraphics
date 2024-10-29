@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Morphological Image Processing</title>
+    <style>
+        #imageContainer {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+            gap: 20px;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .button-group {
+            text-align: center; /* Центрирование кнопок */
+            margin-top: 20px;
+        }
+
+        .button-group button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #87CEEB; /* Небесно-голубой цвет */
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .button-group button:hover {
+            background-color: #53868B; /* Темно-небесно-голубой цвет при наведении */
+        }
+
+        /* Стилизация кнопки "Browse" */
+        input[type="file"] {
+            padding: 10px;
+            margin: 5px;
+            width: 250px; /* Установите желаемую ширину */
+            height: 20px; /* Установите желаемую высоту */
+            background-color: #87CEEB; /* Небесно-голубой цвет */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type="file"]:hover {
+            background-color: #53868B; /* Темно-небесно-голубой цвет при наведении */
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .button-group button {
+            flex: 1;
+            margin-right: 5px;
+        }
+
+    </style>
+    <script src="https://docs.opencv.org/4.5.4/opencv.js" async></script>
+</head>
+<body>
+
+    <div class="button-group">
+        <input type="file" id="fileInput" accept="image/*">
+        <button id="originalBtn">Original</button>
+        <button id="erodeBtn">Erode</button>
+        <button id="dilateBtn">Dilate</button>
+        <button id="segmentBtn">Segmentation</button>
+    </div>
+
+    <div id="imageContainer">
+        <canvas id="inputCanvas"></canvas>
+        <canvas id="outputCanvas"></canvas>
+    </div>
+
+    <script>
+        let inputCanvas = document.getElementById('inputCanvas');
+        let outputCanvas = document.getElementById('outputCanvas');
+        let ctx_input = inputCanvas.getContext('2d');
+        let ctx_output = outputCanvas.getContext('2d');
+        let fileInput = document.getElementById('fileInput');
+        let erodeBtn = document.getElementById('erodeBtn');
+        let dilateBtn = document.getElementById('dilateBtn');
+        let originalBtn = document.getElementById('originalBtn');
+        let currentOperation = 'erode';
+        let originalImageData = null;
+
+        function resizeCanvas(canvas, img) {
+            const maxWidth = 800;
+            const maxHeight = 600;
+
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+                height *= maxWidth / width;
+                width = maxWidth;
+            }
+            if (height > maxHeight) {
+                width *= maxHeight / height;
+                height = maxHeight;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        fileInput.onchange = function() {
+            let file = fileInput.files[0];
+            let reader = new FileReader();
+
+            reader.onload = function(e) {
+                let img = new Image();
+                img.onload = function() {
+                    resizeCanvas(inputCanvas, img);
+                    resizeCanvas(outputCanvas, img);
+                    ctx_input.drawImage(img, 0, 0, inputCanvas.width, inputCanvas.height);
+                    ctx_output.drawImage(img, 0, 0, outputCanvas.width, outputCanvas.height);
+                    originalImageData = ctx_input.getImageData(0, 0, inputCanvas.width, inputCanvas.height);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        function applyMorphologicalOperation(image) {
+            const imageData = ctx_input.getImageData(0, 0, inputCanvas.width, inputCanvas.height);
+            let kernel = cv.Mat.ones(5, 5, cv.CV_8U);
+            if (currentOperation === 'erode') {
+                cv.erode(image, image, kernel);
+            } else if (currentOperation === 'dilate') {
+                cv.dilate(image, image, kernel);
+            }
+            cv.imshow(outputCanvas, image);
+            kernel.delete();
+        }
+
+        erodeBtn.onclick = function() {
+            currentOperation = 'erode';
+            applyMorphologicalOperation(cv.matFromImageData(ctx_input.getImageData(0, 0, inputCanvas.width, inputCanvas.height)));
+        };
+
+        dilateBtn.onclick = function() {
+            currentOperation = 'dilate';
+            applyMorphologicalOperation(cv.matFromImageData(ctx_input.getImageData(0, 0, inputCanvas.width, inputCanvas.height)));
+        };
+
+        originalBtn.onclick = function() {
+            if (originalImageData) {
+                ctx_output.putImageData(originalImageData, 0, 0);
+            }
+        };
+
+        function performSegmentation() {
+            let src = cv.imread('inputCanvas');
+            let dst = new cv.Mat();
+            cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
+            cv.threshold(src, dst, 127.5, 255, cv.THRESH_BINARY);
+            cv.imshow('outputCanvas', dst);
+            src.delete();
+            dst.delete();
+        }
+
+        document.getElementById("segmentBtn").addEventListener("click", function() {
+            performSegmentation();
+        });
+
+    </script>
+</body>
+</html>
