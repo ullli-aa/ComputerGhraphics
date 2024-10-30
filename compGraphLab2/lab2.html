@@ -31,8 +31,6 @@
             border-radius: 5px;
             background-color: #87CEEB;
             color: white;
-            text-align: center;
-            text-decoration: none;
             display: inline-block;
             transition: background-color 0.3s;
             flex: 1;
@@ -64,12 +62,13 @@
     <script src="https://docs.opencv.org/4.5.4/opencv.js" async></script>
 </head>
 <body>
-
     <div class="button-group">
         <input type="file" id="fileInput" accept="image/*">
         <button id="originalBtn">Original</button>
         <button id="erodeBtn">Erode</button>
         <button id="dilateBtn">Dilate</button>
+        <button id="openBtn">Open</button>
+        <button id="closeBtn">Close</button>
         <button id="segmentBtn">Segmentation</button>
     </div>
 
@@ -87,6 +86,8 @@
         let erodeBtn = document.getElementById('erodeBtn');
         let dilateBtn = document.getElementById('dilateBtn');
         let originalBtn = document.getElementById('originalBtn');
+        let openBtn = document.getElementById('openBtn');
+        let closeBtn = document.getElementById('closeBtn');
         let currentOperation = 'erode';
         let originalImageData = null;
 
@@ -135,6 +136,12 @@
                 cv.erode(image, image, kernel);
             } else if (currentOperation === 'dilate') {
                 cv.dilate(image, image, kernel);
+            } else if (currentOperation === 'open') {
+                cv.erode(image, image, kernel);
+                cv.dilate(image, image, kernel);
+            } else if (currentOperation === 'close') {
+                cv.dilate(image, image, kernel);
+                cv.erode(image, image, kernel);
             }
             cv.imshow(outputCanvas, image);
             kernel.delete();
@@ -147,6 +154,16 @@
 
         dilateBtn.onclick = function() {
             currentOperation = 'dilate';
+            applyMorphologicalOperation(cv.matFromImageData(ctx_input.getImageData(0, 0, inputCanvas.width, inputCanvas.height)));
+        };
+
+        openBtn.onclick = function() {
+            currentOperation = 'open';
+            applyMorphologicalOperation(cv.matFromImageData(ctx_input.getImageData(0, 0, inputCanvas.width, inputCanvas.height)));
+        };
+
+        closeBtn.onclick = function() {
+            currentOperation = 'close';
             applyMorphologicalOperation(cv.matFromImageData(ctx_input.getImageData(0, 0, inputCanvas.width, inputCanvas.height)));
         };
 
