@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Morphological Image Processing</title>
+    <meta charset="UTF-8">
     <style>
         #imageContainer {
             display: flex;
@@ -34,7 +35,6 @@
             display: inline-block;
             transition: background-color 0.3s;
             flex: 1;
-            margin-right: 5px;
         }
 
         .button-group button:hover {
@@ -50,7 +50,6 @@
             color: white;
             border: none;
             border-radius: 5px;
-            cursor: pointer;
             transition: background-color 0.3s;
         }
 
@@ -64,12 +63,12 @@
 <body>
     <div class="button-group">
         <input type="file" id="fileInput" accept="image/*">
-        <button id="originalBtn">Original</button>
-        <button id="erodeBtn">Erode</button>
-        <button id="dilateBtn">Dilate</button>
-        <button id="openBtn">Open</button>
-        <button id="closeBtn">Close</button>
-        <button id="segmentBtn">Segmentation</button>
+        <button id="originalBtn">Оригинал</button>
+        <button id="erodeBtn">Эрозия</button>
+        <button id="dilateBtn">Дилатация</button>
+        <button id="openBtn">Размыкание</button>
+        <button id="closeBtn">Замыкание</button>
+        <button id="segmentBtn">Сегментация</button>
     </div>
 
     <div id="imageContainer">
